@@ -1,0 +1,10 @@
+services:
+    bakasura.imagecompressor.listener:
+        class: bakasura\imagecompressor\event\listener
+        arguments:
+            - '@request'
+            - '@config'
+            - '@log'
+            - '@user'
+        tags:
+            - { name: event.listener }
