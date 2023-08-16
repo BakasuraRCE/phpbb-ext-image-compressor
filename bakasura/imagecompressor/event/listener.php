@@ -85,6 +85,7 @@ class listener implements EventSubscriberInterface
 
         if (!$compressed_png_content) {
             $this->log->add('critical', $this->user->data['user_id'], $this->user->ip, 'IC_LOG_COMPRESS_FAILED', false, [$path_to_png_file]);
+            return;
         }
 
         file_put_contents($path_to_png_file, $compressed_png_content);
