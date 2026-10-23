@@ -1,0 +1,1 @@
+bakasura/imagecompressor/CHANGELOG.md
