@@ -1,27 +1,35 @@
 {
 	"name": "bakasura/imagecompressor",
 	"type": "phpbb-extension",
-	"description": "Automatic compress PNG images on upload",
+	"description": "Automatic compress PNG images on upload for phpBB 3.3",
 	"homepage": "https://github.com/BakasuraRCE/phpbb-ext-image-compressor",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"keywords": ["phpbb", "extension", "compress", "png", "image", "tools"],
 	"license": "GPL-2.0-only",
     "authors": [
         {
             "name": "Bakasura",
-            "email": "@bakasura-rce:matrix.org",
             "homepage": "https://bakasurarce.github.io/",
             "role": "Developer"
         }
     ],
 	"require": {
-		"php": ">=5.4",
+		"php": ">=7.1.3",
 		"composer/installers": "~1.0"
+	},
+	"support": {
+		"issues": "https://github.com/BakasuraRCE/phpbb-ext-image-compressor/issues",
+		"source": "https://github.com/BakasuraRCE/phpbb-ext-image-compressor"
 	},
 	"extra": {
 		"display-name": "Image Compressor",
 		"soft-require": {
-			"phpbb/phpbb": ">=3.1.10,<3.3.0@dev"
+			"phpbb/phpbb": ">=3.3.0,<4.0.0@dev"
+		},
+		"version-check": {
+			"host": "raw.githubusercontent.com",
+			"directory": "/BakasuraRCE/phpbb-ext-image-compressor/master",
+			"filename": "version_check.json"
 		}
 	}
 }
