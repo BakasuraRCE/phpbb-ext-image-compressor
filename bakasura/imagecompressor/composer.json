@@ -1,7 +1,7 @@
 {
 	"name": "bakasura/imagecompressor",
 	"type": "phpbb-extension",
-	"description": "Automatic compress PNG images on upload for phpBB 3.3",
+	"description": "Automatically compresses PNG images on upload for phpBB 3.3",
 	"homepage": "https://github.com/BakasuraRCE/phpbb-ext-image-compressor",
 	"version": "1.1.0",
 	"keywords": ["phpbb", "extension", "compress", "png", "image", "tools"],
