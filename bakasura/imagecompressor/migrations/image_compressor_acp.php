@@ -14,14 +14,19 @@ class image_compressor_acp extends \phpbb\db\migration\migration
     }
 
     /**
-     * This migration depends on phpBB's v314 migration
+     * This migration depends on phpBB's v330 migration
      * already being installed.
      */
     static public function depends_on()
     {
-        return ['\phpbb\db\migration\data\v31x\v314'];
+        return ['\\phpbb\\db\\migration\\data\\v330\\v330'];
     }
 
+    /**
+     * Adds configuration values and ACP module entries.
+     *
+     * @return array List of migration operations.
+     */
     public function update_data()
     {
         return [
@@ -44,7 +49,7 @@ class image_compressor_acp extends \phpbb\db\migration\migration
                 'acp',
                 'IC_ACP_TITLE',
                 [
-                    'module_basename' => '\bakasura\imagecompressor\acp\image_compressor_module',
+                    'module_basename' => '\\bakasura\\imagecompressor\\acp\\image_compressor_module',
                     'modes' => ['settings'],
                 ],
             ]],
