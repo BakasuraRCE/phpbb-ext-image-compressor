@@ -74,6 +74,12 @@ compression is skipped and the original file is kept unchanged.
 
 See [CHANGELOG.md](CHANGELOG.md) for a full list of changes.
 
+## Version Notifications
+
+This extension uses phpBB's built-in version-check mechanism. When a new release
+is available, the phpBB Administration Control Panel will display an update
+notification on the extension management page.
+
 ## License
 
 [GPLv2](LICENSE)

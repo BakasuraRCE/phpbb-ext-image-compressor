@@ -2,6 +2,13 @@
 
 namespace bakasura\imagecompressor\migrations;
 
+/**
+ * Migration: adds pngquant quality range configuration keys (ic_min_quality, ic_max_quality).
+ *
+ * @package bakasura\imagecompressor\migrations
+ * @copyright (c) bakasura
+ * @license GNU General Public License, version 2 (GPL-2.0)
+ */
 class image_compressor_quality extends \phpbb\db\migration\migration
 {
     /**
@@ -9,7 +16,7 @@ class image_compressor_quality extends \phpbb\db\migration\migration
      */
     public function effectively_installed()
     {
-        return isset($this->config['ic_min_quality']);
+        return isset($this->config['ic_min_quality']) && isset($this->config['ic_max_quality']);
     }
 
     /**

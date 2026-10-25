@@ -2,6 +2,13 @@
 
 namespace bakasura\imagecompressor\migrations;
 
+/**
+ * Migration: registers the Image Compressor ACP module and its menu entry.
+ *
+ * @package bakasura\imagecompressor\migrations
+ * @copyright (c) bakasura
+ * @license GNU General Public License, version 2 (GPL-2.0)
+ */
 class image_compressor_acp extends \phpbb\db\migration\migration
 {
     /**

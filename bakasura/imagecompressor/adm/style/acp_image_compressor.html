@@ -1,10 +1,9 @@
+{% INCLUDECSS '@bakasura_imagecompressor/acp_image_compressor.css' %}
 {% INCLUDE 'overall_header.html' %}
-
-<style>.ic-quality-input { width: 60px; }</style>
 
 <h1>{{ lang('SETTINGS') }}</h1>
 
-<p class="{{ IC_STATUS_CLASS }}">{{ IC_STATUS_MESSAGE }}</p>
+<p class="{{ IC_STATUS_CLASS | e }}">{{ IC_STATUS_MESSAGE | e }}</p>
 
 <form id="acp_board" method="post" action="{{ U_ACTION }}">
     <fieldset>

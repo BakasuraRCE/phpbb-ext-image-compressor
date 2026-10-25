@@ -27,10 +27,7 @@ class image_compressor_module
      */
     public function main($id, $mode)
     {
-        global $language, $template, $request, $phpbb_container;
-
-        /* @var $config \phpbb\config\config */
-        $config = $phpbb_container->get('config');
+        global $config, $language, $template, $request;
 
         $this->tpl_name = 'acp_image_compressor';
         $this->page_title = $language->lang('IC_ACP_TITLE');
@@ -49,10 +46,14 @@ class image_compressor_module
                     $ic_max_quality = max(0, min(100, $request->variable('ic_max_quality', 90)));
 
                     if ($ic_min_quality >= $ic_max_quality) {
-                        trigger_error($language->lang('IC_ACP_QUALITY_INVALID') . adm_back_link($this->u_action));
+                        trigger_error($language->lang('IC_ACP_QUALITY_INVALID') . adm_back_link($this->u_action), E_USER_WARNING);
                     }
 
-                    $config->set('ic_pngquant_path', $request->variable('ic_pngquant_path', ''));
+                    $ic_pngquant_path = $request->variable('ic_pngquant_path', '');
+                    if ($ic_pngquant_path !== '' && $ic_pngquant_path[0] !== '/') {
+                        trigger_error($language->lang('IC_ACP_PATH_NOT_ABSOLUTE') . adm_back_link($this->u_action), E_USER_WARNING);
+                    }
+                    $config->set('ic_pngquant_path', $ic_pngquant_path);
                     $config->set('ic_min_quality', $ic_min_quality);
                     $config->set('ic_max_quality', $ic_max_quality);
                     trigger_error($language->lang('IC_ACP_SETTING_SAVED') . adm_back_link($this->u_action));
@@ -61,13 +62,21 @@ class image_compressor_module
                 // --- pngquant availability check ---
                 $ic_pngquant_version  = '';
                 $pngquant_path        = $config['ic_pngquant_path'];
-                $shell_exec_disabled  = !function_exists('shell_exec')
-                    || in_array('shell_exec', array_map('trim', explode(',', ini_get('disable_functions'))));
 
-                if ($shell_exec_disabled)
+                // proc_open is used instead of shell_exec because hardened containers
+                // (e.g. DHI distroless images) have no /bin/sh; shell_exec/exec/system
+                // all invoke /bin/sh -c internally and will always fail in those environments.
+                // proc_open() with an array executes the binary via execve() directly.
+                $proc_open_disabled = !function_exists('proc_open')
+                    || in_array('proc_open', array_map('trim', explode(',', ini_get('disable_functions'))));
+
+                $ic_status_class = '';
+                $ic_status_message = '';
+
+                if ($proc_open_disabled)
                 {
                     $ic_status_class   = 'errorbox';
-                    $ic_status_message = $language->lang('IC_STATUS_SHELL_EXEC_DISABLED');
+                    $ic_status_message = $language->lang('IC_STATUS_PROC_OPEN_DISABLED');
                 }
                 else if (empty($pngquant_path))
                 {
@@ -81,22 +90,47 @@ class image_compressor_module
                 }
                 else
                 {
-                    // Quick functional test: run pngquant with no args and check the first line of output.
-                    // pngquant has no --version flag; calling it without arguments prints the version
-                    // on the first line followed by usage text (exits with non-zero, hence 2>&1).
-                    $raw_output     = (string) shell_exec(escapeshellarg($pngquant_path) . ' 2>&1');
-                    $version_output = trim(explode("\n", $raw_output)[0]);
-                    if ($version_output !== '' && stripos($version_output, 'pngquant') !== false)
-                    {
-                        $ic_status_class    = 'successbox';
-                        $ic_status_message  = $language->lang('IC_STATUS_OK');
-                        $ic_pngquant_version = $version_output;
-                    }
-                    else
+                    // Quick functional test: invoke pngquant with no arguments.
+                    // pngquant has no --version flag; with no args it prints the version
+                    // line on the first line of stderr and exits non-zero.
+                    // Array form = exec form: no shell needed, works in distroless containers.
+                    // stdin is closed immediately (EOF) so pngquant never reads from it.
+                    $descriptorspec = [
+                        0 => ['pipe', 'r'],  // stdin: closed immediately
+                        1 => ['pipe', 'w'],  // stdout: capture
+                        2 => ['pipe', 'w'],  // stderr: capture (pngquant writes version here)
+                    ];
+                    $process = @proc_open([$pngquant_path], $descriptorspec, $pipes);
+                    if (!is_resource($process))
                     {
                         $ic_status_class    = 'attentionbox';
                         $ic_status_message  = $language->lang('IC_STATUS_BINARY_TEST_FAILED', $pngquant_path);
                         $ic_pngquant_version = '';
+                    }
+                    else
+                    {
+                        fclose($pipes[0]);  // send EOF to pngquant's stdin immediately
+                        $stdout = stream_get_contents($pipes[1]);
+                        $stderr = stream_get_contents($pipes[2]);
+                        fclose($pipes[1]);
+                        fclose($pipes[2]);
+                        proc_close($process);
+
+                        // pngquant writes version info to stderr; combine both to be safe
+                        $raw_output     = $stdout . $stderr;
+                        $version_output = trim(explode("\n", $raw_output)[0]);
+                        if ($version_output !== '' && stripos($version_output, 'pngquant') !== false)
+                        {
+                            $ic_status_class    = 'successbox';
+                            $ic_status_message  = $language->lang('IC_STATUS_OK');
+                            $ic_pngquant_version = $version_output;
+                        }
+                        else
+                        {
+                            $ic_status_class    = 'attentionbox';
+                            $ic_status_message  = $language->lang('IC_STATUS_BINARY_TEST_FAILED', $pngquant_path);
+                            $ic_pngquant_version = '';
+                        }
                     }
                 }
                 // --- end check ---
